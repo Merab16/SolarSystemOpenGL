@@ -4,7 +4,15 @@ set(PROJECT_NAME SolarSystemOpenGL)
 
 project(${PROJECT_NAME})
 
-add_executable(${PROJECT_NAME} Sources/main.cpp Sources/Window.cpp Headers/Window.h)
+set(CMAKE_CXX_STANDARD 17)
+
+add_executable(${PROJECT_NAME} 
+	Sources/main.cpp 
+	Sources/Window.cpp 
+	Headers/Window.h
+	Render/Sources/ShaderProgram.cpp
+	Render/Headers/ShaderProgram.h
+)
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
