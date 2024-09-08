@@ -1,9 +1,10 @@
-#include "../Headers/Window.h"
+#include "Window.h"
 
 #include <stdexcept>
 #include <iostream>
 
-#include "../Render/Headers/ShaderProgram.h"
+#include "Render/ShaderProgram.h"
+
 
 
 // callbacks
@@ -13,23 +14,6 @@ void glfwKeyCallback(GLFWwindow* pWindow, int key, int scancode, int action, int
 	}
 }
 
-const char* vertex_shader =
-"#version 460\n"
-"layout(location = 0) in vec3 vertex_position;"
-"layout(location = 1) in vec3 vertex_color;"
-"out vec3 color;"
-"void main() {"
-"	color = vertex_color;"
-"	gl_Position = vec4(vertex_position, 1.0);"
-"}";
-
-const char* fragment_shader =
-"#version 460\n"
-"in vec3 color;"
-"out vec4 frag_color;"
-"void main() {"
-"	frag_color = vec4(color, 1.0);"
-"}";
 
 GLfloat points[] = {
 	0.f, 0.5f, 0.f,
@@ -44,7 +28,10 @@ GLfloat colors[] = {
 };
 
 namespace MyWindow {
-	Window::Window(size_t width, size_t height, const std::string& wName) {
+	Window::Window(size_t width, size_t height, const std::string& wName,
+		const std::string& exePath)
+		: resourceManager_(exePath)
+	{
 		if (!glfwInit()) {
 			throw std::logic_error("Error init GLFW");
 		}
@@ -71,7 +58,6 @@ namespace MyWindow {
 		std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
 		std::cout << "OpenGL: " << glGetString(GL_VERSION) << std::endl;
 
-
 		glClearColor(0, 1, 1, 1);
 
 		
@@ -93,11 +79,13 @@ namespace MyWindow {
 
 	// public
 	void Window::Run() {
-		std::string vShader(vertex_shader);
-		std::string fShader(fragment_shader);
-		Renderer::ShaderProgram shaderProgram(vertex_shader, fragment_shader);
-		if (!shaderProgram.IsComplied()) {
-			throw std::logic_error("Cant create shader program");
+		auto pDefaultShaderProgram = resourceManager_.LoadShaders(
+			"DefaultShader",
+			"res/Shaders/vertex.txt",
+			"res/Shaders/fragment.txt");
+
+		if (!pDefaultShaderProgram) {
+			throw std::logic_error("Can't create shader program: DefaultShader");
 		}
 
 		GLuint points_vbo = 0;
@@ -128,7 +116,7 @@ namespace MyWindow {
 		{
 			/* Render here */
 			glClear(GL_COLOR_BUFFER_BIT);
-			shaderProgram.Use();
+			pDefaultShaderProgram->Use();
 			glBindVertexArray(vao);
 				glDrawArrays(GL_TRIANGLES, 0, 3);  
 
